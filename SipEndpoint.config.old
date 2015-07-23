@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SipEndpoint xmlns="http://schemas.genesyslab.com/2009/sipendpoint">
+  <Container name ="Basic">
+    <Connectivity user="7001" server="demosrv:5060" protocol="udp"/>
+  </Container>
+  <Container name ="Cp">
+    <settings version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.counterpath.com/cps">
+      <domain name="audio">
+        <section name="headset">
+          <!--
+          Set to true to enable AGC for audio via the headset (outgoing audio stream).
+          -->
+          <setting name="audio_in_agc_enabled" value="1"/>
+        </section>
+        <section name="incoming">
+          <!--
+          True to apply AGC to incoming streams.
+          -->
+          <setting name="use_agc" value="1"/>
+        </section>
+        <section name="vad">
+          <!--
+          Sets the amount of time after the point where no voice is detected before audio is actually not sent.
+          It adds a delay to allow a little bit of audio to continue after no voice is detected.
+          This settings is only for codecs that do not have built in support for VAD/DTX, and only if DTX is enabled
+          -->
+          <!--
+          <setting name ="continue_sending_from_last_activity_in_milliseconds"/>
+          -->
+        </section>
+      </domain>
+      <domain name="system">
+        <section name="qos">
+          <!--
+          Specifies the type of QOS supported for audio, and  if so, whether bandwidth is to be reserved.
+          -->
+          <setting name="audio" value="tos 46"/>
+        </section>
+        <section name="dtmf">
+          <!--
+          Set as described in RTP:2833:enabled.
+          One scenario in which it might be advisable to send in band is if you own your gateways, and: 
+          - One or more of these gateways does not support 2833 or does not handle it well.  
+          - Your gateway is using codecs that reproduce DTMF tones well. 
+          In this case, setting this setting to true will ensure that  DTMF tones get through (because the DTMF tones will bypass the gateway) and that they reproduce accurately at the receiving end.  
+          Another scenario is: 
+          - One or more of these gateways does not support 2833 or does not handle it well.  
+          - Your gateway is using codecs that do not reproduce DTMF tones well (because they are designed to handle human voice rather than artificial sounds). 
+          In this scenario, setting this setting to true will not help ensure DTMF tones get through. There is in fact no solution to this scenario.
+          -->
+          <setting name="force_send_in_band" value="0"/>
+          <!--
+          If system:dtmf:force_send_in_band  is false, specify the minimum play duration for DTMF tones.
+          -->
+          <setting name="minimum_rfc2833_play_time" value="40"/>
+        </section>
+        <section name="network">
+          <!--
+          When DTX is enabled, transmission to the remote party is suspended when the application detects that the local user is not speaking.  
+          True means DTX is enabled; silence is not transmitted. 
+          False (the default) means silence is transmitted.
+          -->
+          <setting name="dtx_enabled" value="0"/>
+        </section>
+        <section name="diagnostics">
+          <setting name="enable_logging" value="1"/>
+          <!--
+          None ,Critical, Error, Warning, Info, Debug, MaxDetails
+          -->
+          <setting name="log_level" value="Error"/>
+        </section>
+        <section name="general">
+          <!--
+          Set to true to include the OS version in the SIPUserAgent header field.
+          -->
+          <setting name="add_OS_version_to_user_agent_header" value="1"/>
+        </section>
+        <!--
+          Set to true to enable in-dialog NOTIFY.
+          -->
+        <section name="indialog_notify">
+          <setting name="enable_indialognotify" value="1"/>
+        </section>
+      </domain>
+      <domain name="rtp">
+        <section name="2833">
+          <!--
+          Set to true to enable local support for RFC 2833 out-of-band DTMF. This setting (a) works with system:dtmf:force_send_in_band (setting (b) as follows:
+          (a)  (b)   Result
+          1     1     Send out-of-band 2833; if that is not acceptable, fall back to in-band. 
+          1     0     Send out-of-band 2833; if that is not acceptable, fall back to INFO .
+          0     1     Send in-band DTMF.
+          0     0     Send out-of-band INFO.
+          In-band means the application will encode the DTMF signals in the audio stream as regular sound. Typically, DTMF is not sent in band, and is only used in specific situations. See system:dtmf:force_send_in_band for examples.
+          -->
+          <setting name="enabled" value="1"/>
+          <!--
+          If system:dtmf:force_send_in_band is false and rtp:2833:enabled is true, specifies the minimum length of time for which to send 2833 packets. This setting is useful in case the user presses a key really fast, to make sure the packet time is longer than that key press.
+          -->
+          <setting name="hold_over_time_in_ms" value="100"/>
+          <!--
+          If system:dtmf:force_send_in_band is false and rtp:2833:enabled is true, specifies the time between 2833 packets. During this time, only audio will be sent. This setting is useful if you cannot handled back-to-back 2833 packets.
+          -->
+          <setting name="packet_time_in_ms" value="60"/>
+          <!--
+          If system:dtmf:force_send_in_band  is false, specifies the payload number for DTMF.
+          -->
+          <setting name="payload_number" value="101"/>
+        </section>
+        <section name="inactivity">
+          <!--
+          Set to true to instruct the application to hangup when it detects that the RTP session is inactive.
+          -->
+          <setting name="timer_enabled" value="0"/>
+        </section>
+      </domain>
+      <domain name="proxies">
+        <section name="proxy0">
+          <!--
+          SIP only. Set to true to force the application to use transport ports within a specific range for RTP (as specified by sip_port_range_min and sip_port_range_max). 
+          Set to false to enable the application to use transport ports in the full standard range of 1025 to 65535.
+          These settings and the settings with the "sip_" prefix work as follows:
+          sip_port_            port_
+          range_enabled     range_enabled
+          0                         0       Use the full standard range
+          0                         1       Use the range specified by the port_range min and max for both signaling and RTP
+          1                         0       Use the range specified by the sip_port_range min and max for signaling and use the full standard range for RTP
+          1                         1       Use the range specified by the sip_port_range min and max for signaling and the range specified by port_range_min/max for RTP
+          -->
+          <!-- -->           
+          <setting name="sip_port_range_enable" value="0"/>
+          <!--
+          SIP only. If sip_port_range_enable is true, enter the port value of the lower port in the range.
+          -->
+          <!-- -->
+          <setting name="sip_port_range_min" value="15660"/>
+          <!--
+          SIP only. If sip_port_range_enable is true, enter the port value of the upper port in the range.
+          -->
+          <!-- -->
+          <setting name="sip_port_range_max" value="15669"/>
+          <!--
+          Set to true to force the application to use transport ports within a specific range (as specified by port_range_min and port_range_max). 
+          -->
+          <!-- -->
+          <setting name="port_range_enable" value="0"/>
+          <!--
+          If port_range_enable is true, enter the port value of the lower port in the range.
+          -->
+          <!-- -->
+          <setting name="port_range_min" value="1025"/>
+          <!--
+          If port_range_enable is true, enter the port value of the upper port in the range.
+          -->
+          <!-- -->
+          <setting name="port_range_max" value="65535"/>
+          
+          <setting name="reregister_in_seconds" value="60"/>
+          <setting name="auto_answer_audio" value="0"/>
+          <setting name="auto_answer_video" value="0"/>
+          <setting name="media_encrypted" value="1"/>
+        </section>
+        <section name="proxy1">
+          <!--
+          SIP only. Set to true to force the application to use transport ports within a specific range for RTP (as specified by sip_port_range_min and sip_port_range_max). 
+          Set to false to enable the application to use transport ports in the full standard range of 1025 to 65535.
+          These settings and the settings with the "sip_" prefix work as follows:
+          sip_port_            port_
+          range_enabled     range_enabled
+          0                         0       Use the full standard range
+          0                         1       Use the range specified by the port_range min and max for both signaling and RTP
+          1                         0       Use the range specified by the sip_port_range min and max for signaling and use the full standard range for RTP
+          1                         1       Use the range specified by the sip_port_range min and max for signaling and the range specified by port_range_min/max for RTP
+          -->
+          <!-- -->          
+          <setting name="sip_port_range_enable" value="0"/>
+          <!--
+          SIP only. If sip_port_range_enable is true, enter the port value of the lower port in the range.
+          -->
+          <!-- -->
+          <setting name="sip_port_range_min" value="15660"/>
+          <!--
+          SIP only. If sip_port_range_enable is true, enter the port value of the upper port in the range.
+          -->
+          <!-- -->
+          <setting name="sip_port_range_max" value="15669"/>
+          <!--
+          Set to true to force the application to use transport ports within a specific range (as specified by port_range_min and port_range_max). 
+          -->
+          <!-- -->
+          <setting name="port_range_enable" value="0"/>
+          <!--
+          If port_range_enable is true, enter the port value of the lower port in the range.
+          -->
+          <!-- -->
+          <setting name="port_range_min" value="1025"/>
+          <!--
+          If port_range_enable is true, enter the port value of the upper port in the range.
+          -->
+          <!-- -->
+          <setting name="port_range_max" value="65535"/>
+          
+          <setting name="reregister_in_seconds" value="60"/>
+          <setting name="auto_answer_audio" value="1"/>
+          <setting name="auto_answer_video" value="1"/>
+          <setting name="media_encrypted" value="1"/>
+        </section>
+      </domain>
+      <domain name="genesyslab">
+        <section name="device">
+          <setting name="use_headset" value="0"/>
+          <setting name="reject_call_when_headset_na" value="0"/>
+          <setting name="error_code_when_headset_na" value="480"/>
+          <setting name="error_message_when_headset_na" value="HeadSet Unplugged"/>
+          <setting name="headset_name" value="Sennheiser USB"/>
+          <!--
+          <setting name="headset_name" value=".*Sennheiser USB.*|.*USB Audio.*"/>
+          -->
+          <setting name="manual_audio_devices_configure" value="1"/>
+          <setting name="audio_in_device" value="Sennheiser USB"/>
+          <setting name="audio_out_device" value="Sennheiser USB"/>
+          <setting name="ringer_device" value="Sennheiser USB"/>
+        </section>
+        <section name="system">
+          <setting name="export_settings" value="EndpointSettings.xml"/>
+          <setting name="enable_export_settings" value="0"/>
+          <setting name="log_level_AbstractPhone" value="0"/>
+          <setting name="log_level_Audio" value="0"/>
+          <setting name="log_level_Auto Configuration" value="0"/>
+          <setting name="log_level_CCM" value="0"/>
+          <setting name="log_level_Conferencing" value="0"/>
+          <setting name="log_level_Contacts" value="0"/>
+          <setting name="log_level_DNS" value="0"/>
+          <setting name="log_level_GUI" value="0"/>
+          <setting name="log_level_Jitter" value="0"/>
+          <setting name="log_level_Licensing" value="0"/>
+          <setting name="log_level_Media" value="0"/>
+          <setting name="log_level_Privacy" value="0"/>
+          <setting name="log_level_RTP" value="0"/>
+          <setting name="log_level_STUN" value="0"/>
+          <setting name="log_level_Security" value="0"/>
+          <setting name="log_level_Storage" value="0"/>
+          <setting name="log_level_Transport" value="0"/>
+          <setting name="log_level_USB Devices" value="0"/>
+          <setting name="log_level_Utilities" value="0"/>
+          <setting name="log_level_Video" value="0"/>
+          <setting name="log_level_Voice Quality" value="0"/>
+          <setting name="log_level_XMPP" value="0"/>
+          <setting name="log_level_Endpoint" value="6"/>
+        </section>
+        <section name="beeptone">
+          <setting name="play_locally" value="0"/>
+          <setting name="enable_beeptone" value="1"/>
+          <setting name="beeptone_file" value="beep.wav"/>
+          <setting name="beeptone_timeout" value="30000"/>
+        </section>
+        <section name="dtmf">
+          <setting name="play_locally" value="1"/>
+          <setting name="pause_start_stop_dtmf" value="100"/>
+        </section>
+        <section name="control">
+          <setting name="auto_answer" value="0"/>
+        </section>
+      </domain>
+    </settings>
+  </Container>
+</SipEndpoint>
